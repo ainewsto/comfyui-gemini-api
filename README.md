@@ -1,4 +1,4 @@
-# comfyui-gemmi-api
+# comfyui-gemini-api
 
 谷歌ComflyGeminiAPI节点支持生成文生多图（最多4张，控制时间）。
 支持多图片参考，我是借用google labs的whisk思路，我感觉比较实用，并不需要太多参考图，3种足够.
