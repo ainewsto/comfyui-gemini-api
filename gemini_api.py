@@ -11,6 +11,21 @@ import base64
 import folder_paths
 from .utils import pil2tensor, tensor2pil
 
+
+def get_config():
+    try:
+        config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Comflyapi.json')
+        with open(config_path, 'r') as f:  
+            config = json.load(f)
+        return config
+    except:
+        return {}
+
+def save_config(config):
+    config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Comflyapi.json')
+    with open(config_path, 'w') as f:
+        json.dump(config, f, indent=4)
+
 class ComfyGeminiAPI:
     @classmethod
     def INPUT_TYPES(cls):
@@ -36,26 +51,23 @@ class ComfyGeminiAPI:
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.01}),
                 "top_p": ("FLOAT", {"default": 0.95, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2147483647}),
+                "timeout": ("INT", {"default": 120, "min": 10, "max": 600, "step": 10}),
             },
             "optional": {
+                "api_key": ("STRING", {"default": ""}),
                 "object_image": ("IMAGE",),  
                 "subject_image": ("IMAGE",),
                 "scene_image": ("IMAGE",),
             }
         }
+    
     RETURN_TYPES = ("IMAGE", "STRING", "STRING")
     RETURN_NAMES = ("generated_images", "response", "image_url")
     FUNCTION = "process"
-    CATEGORY = "Gemini"
-    
+    CATEGORY = "Comfly/Comfly_Gemini"
+
     def __init__(self):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        config_file_path = os.path.join(current_dir, 'Comflyapi.json')
-        
-        with open(config_file_path, 'r') as f:
-            api_config = json.load(f)
-            
-        self.api_key = api_config.get('api_key', '')
+        self.api_key = get_config().get('api_key', '')
         self.timeout = 120 
 
     def get_headers(self):
@@ -116,9 +128,20 @@ class ComfyGeminiAPI:
         width, height = map(int, resolution_str.split('x'))
         return (width, height)
 
-    def process(self, prompt, model, resolution, num_images, temperature, top_p, seed, 
-                object_image=None, subject_image=None, scene_image=None):
+    def process(self, prompt, model, resolution, num_images, temperature, top_p, seed, timeout=120, 
+                object_image=None, subject_image=None, scene_image=None, api_key=""):
+        # Update API key if provided
+        if api_key.strip():
+            self.api_key = api_key
+            config = get_config()
+            config['api_key'] = api_key
+            save_config(config)
+            
+        # Set the timeout value from user input
+        self.timeout = timeout
+        
         try:
+            
             # Get current timestamp for formatting
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             
