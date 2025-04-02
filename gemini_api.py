@@ -64,7 +64,7 @@ class ComfyGeminiAPI:
     RETURN_TYPES = ("IMAGE", "STRING", "STRING")
     RETURN_NAMES = ("generated_images", "response", "image_url")
     FUNCTION = "process"
-    CATEGORY = "Comfly/Comfly_Gemini"
+    CATEGORY = "ainewsto/Comfly_Gemini"
 
     def __init__(self):
         self.api_key = get_config().get('api_key', '')
